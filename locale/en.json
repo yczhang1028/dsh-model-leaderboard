@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Model leaderboard",
+    "description": "Live OpenRouter model rankings in the left sidebar: quality indices, head-to-head Elo, seven-day token usage, and per-million-token prices, with one click to make a model the default."
+  }
+}

@@ -1,0 +1,3 @@
+- insert:
+    - id: model-leaderboard
+      name: '@local/dsh-model-leaderboard'

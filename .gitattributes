@@ -1,0 +1,9 @@
+# Normalize to LF in the repository so the plugin behaves the same on every
+# platform; the files are plain JS, JSON, YAML, SVG and Markdown.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
