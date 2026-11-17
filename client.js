@@ -476,10 +476,15 @@ table.ml-table td.ml-num { text-align: right; }
 .ml-bars { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
 .ml-bar-row { display: grid; grid-template-columns: 220px 1fr 84px; align-items: center; gap: 12px; }
 .ml-bar-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ml-bar-track { background: var(--dsw-alias-interactive-bg-hover); border-radius: 5px; height: 14px; overflow: hidden; }
+.ml-bar-track { background: var(--dsw-alias-interactive-bg-hover); border-radius: 5px; height: 12px; overflow: hidden; }
 .ml-bar-fill {
   height: 100%; border-radius: 5px;
-  background: var(--dsw-alias-brand-primary);
+  /* The host's monochrome brand fill is a wall of black across 27 bars, so the
+     chart marks use the brand-blue accent at a soft alpha instead. UI chrome
+     (tabs, buttons, pills) stays neutral so the panel does not turn all blue. */
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--dsw-alias-state-business-primary) 48%, transparent),
+    color-mix(in srgb, var(--dsw-alias-state-business-primary) 88%, transparent));
   transform-origin: left center;
   animation: ml-grow .55s cubic-bezier(.22, 1, .36, 1) both;
 }
@@ -495,7 +500,7 @@ table.ml-table td.ml-num { text-align: right; }
   animation: ml-fade .45s ease both;
 }
 .ml-chart:active { cursor: grabbing; }
-.ml-chart-zoomed { border-radius: 8px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dsw-alias-brand-primary) 22%, transparent); }
+.ml-chart-zoomed { border-radius: 8px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dsw-alias-state-business-primary) 30%, transparent); }
 .ml-chart-bar {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0 8px;
   user-select: none;
@@ -505,8 +510,8 @@ table.ml-table td.ml-num { text-align: right; }
 .ml-chart-sep { width: 1px; height: 18px; background: var(--dsw-alias-border-l2); }
 .ml-hint { color: var(--dsw-alias-label-tertiary); font-size: 11.5px; margin-left: auto; }
 .ml-marquee {
-  fill: color-mix(in srgb, var(--dsw-alias-brand-primary) 10%, transparent);
-  stroke: var(--dsw-alias-brand-primary);
+  fill: color-mix(in srgb, var(--dsw-alias-state-business-primary) 12%, transparent);
+  stroke: var(--dsw-alias-state-business-primary);
   stroke-width: 1; stroke-dasharray: 4 3;
   pointer-events: none;
 }
@@ -520,7 +525,7 @@ table.ml-table td.ml-num { text-align: right; }
   transform-box: fill-box; transform-origin: center;
 }
 .ml-halo {
-  fill: var(--dsw-alias-brand-primary); opacity: .14;
+  fill: var(--dsw-alias-state-business-primary); opacity: .18;
   transform-box: fill-box; transform-origin: center;
   transition: opacity .2s ease, transform .22s cubic-bezier(.22, 1, .36, 1);
 }
@@ -543,7 +548,7 @@ table.ml-table td.ml-num { text-align: right; }
 }
 .ml-dot-label-hot { fill: var(--dsw-alias-label-primary); font-weight: 600; }
 .ml-dot-label-pin { fill: var(--dsw-alias-label-primary); font-weight: 600; }
-.ml-leader { stroke: var(--dsw-alias-brand-primary); stroke-width: 1; opacity: .4; pointer-events: none; }
+.ml-leader { stroke: var(--dsw-alias-state-business-primary); stroke-width: 1; opacity: .5; pointer-events: none; }
 .ml-pins { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
 .ml-pins-label { color: var(--dsw-alias-label-secondary); font-size: 12px; }
 .ml-pin {
@@ -570,7 +575,7 @@ table.ml-table td.ml-num { text-align: right; }
 }
 .ml-legend { display: flex; gap: 18px; align-items: center; color: var(--dsw-alias-label-secondary); margin-top: 10px; font-size: 12px; }
 .ml-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
-.ml-legend .ml-on { background: var(--dsw-alias-brand-primary); }
+.ml-legend .ml-on { background: var(--dsw-alias-state-business-primary); }
 .ml-legend .ml-off { background: var(--dsw-alias-state-idle-primary); }
 
 .ml-search, .ml-select {
@@ -595,7 +600,9 @@ table.ml-table td.ml-num { text-align: right; }
 .ml-spark { display: inline-flex; align-items: flex-end; gap: 2px; height: 16px; }
 .ml-spark span {
   width: 3px; border-radius: 2px;
-  background: var(--dsw-alias-brand-primary); opacity: .75;
+  background: linear-gradient(180deg,
+    var(--dsw-alias-state-business-primary),
+    color-mix(in srgb, var(--dsw-alias-state-business-primary) 32%, transparent));
 }
 .ml-up { background: color-mix(in srgb, var(--dsw-alias-state-success-primary) 14%, transparent); }
 .ml-down { background: color-mix(in srgb, var(--dsw-alias-state-error-primary) 12%, transparent); }
@@ -1164,8 +1171,8 @@ table.ml-table td.ml-num { text-align: right; }
           onDoubleClick: resetView,
         }, [
           h('defs', { key: 'defs' }, h('radialGradient', { id: gradientId }, [
-            h('stop', { key: 'a', offset: '0%', stopColor: 'var(--dsw-alias-brand-primary)', stopOpacity: '1' }),
-            h('stop', { key: 'b', offset: '100%', stopColor: 'var(--dsw-alias-brand-primary)', stopOpacity: '0.55' }),
+            h('stop', { key: 'a', offset: '0%', stopColor: 'var(--dsw-alias-state-business-primary)', stopOpacity: '1' }),
+            h('stop', { key: 'b', offset: '100%', stopColor: 'var(--dsw-alias-state-business-primary)', stopOpacity: '0.6' }),
           ])),
 
           // Horizontal gridlines only: vertical ones fight the logarithmic ticks.

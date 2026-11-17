@@ -134,6 +134,18 @@ emptying it.
 Rankings data is licensed CC BY 4.0 by OpenRouter; the panel carries the
 attribution line.
 
+## Appearance
+
+The panel inherits the host theme and references only `--dsw-alias-*` tokens, so
+it follows the light/dark switch and the font-size preference. Every token the
+bundle references is declared by the shipped theme.
+
+Chart marks — bars, sparklines, scatter dots, the pinned leader line and the
+box-zoom marquee — use the brand-blue accent
+`--dsw-alias-state-business-primary` at a soft alpha ramp. UI chrome — tabs,
+buttons, board pills — stays on `--dsw-alias-brand-primary`, which is the host's
+own monochrome accent, so the panel does not turn all blue.
+
 ## Turning it off
 
 Disabling the bundle removes the sidebar entry, the panel, and the HTTP routes.
