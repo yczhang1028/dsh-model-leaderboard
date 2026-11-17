@@ -114,6 +114,7 @@ window.__ModuleLoader__.load({
       'msg.setOk': 'Default model set to',
       'msg.setUnrouted': 'Set, but this DSH catalog does not advertise that model, so a request may fail. Check Settings → Models.',
       'msg.setVariant': 'That row is a variant this DSH catalog does not carry, so the plain route was set instead of',
+      'msg.effortDropped': 'The previous reasoning effort does not apply to this model, so it now uses the model default.',
       'msg.setFailed': 'Could not set the default model',
       'msg.copyFailed': 'Could not copy to the clipboard',
       'search.placeholder': 'Filter by name or id',
@@ -231,6 +232,7 @@ window.__ModuleLoader__.load({
       'msg.setOk': '默认模型已设为',
       'msg.setUnrouted': '已设置，但当前 DSH catalog 没有收录该模型，请求可能失败。请检查 设置 → 模型。',
       'msg.setVariant': '该行是当前 DSH catalog 没有收录的变体，因此改为设置普通路由：',
+      'msg.effortDropped': '上一个推理档位不适用于该模型，现已改用模型默认档位。',
       'msg.setFailed': '设置默认模型失败',
       'msg.copyFailed': '复制到剪贴板失败',
       'search.placeholder': '按名称或 ID 过滤',
@@ -1614,14 +1616,16 @@ table.ml-table td.ml-num { text-align: right; }
           const payload = await response.json()
           if (payload?.ok) {
             const label = payload.selection.provider + '/' + payload.selection.model
-            const warning = payload.routed === false
-              ? t('msg.setUnrouted')
-              : payload.variantPreserved === false
-                ? t('msg.setVariant') + ' ' + payload.requested
-                : ''
+            // Every way the write can differ from what was asked for is reported,
+            // so a dropped reasoning effort is never something the user finds out
+            // about later.
+            const warnings = []
+            if (payload.routed === false) warnings.push(t('msg.setUnrouted'))
+            if (payload.variantPreserved === false) warnings.push(t('msg.setVariant') + ' ' + payload.requested)
+            if (payload.effortDropped === true) warnings.push(t('msg.effortDropped'))
             setNotice({
-              kind: warning === '' ? 'ok' : 'warn',
-              text: t('msg.setOk') + ' ' + label + (warning === '' ? '' : '. ' + warning),
+              kind: warnings.length === 0 ? 'ok' : 'warn',
+              text: t('msg.setOk') + ' ' + label + (warnings.length === 0 ? '' : '. ' + warnings.join(' ')),
             })
             setState((current) => (current.data
               ? { ...current, data: { ...current.data, current: payload.selection } }

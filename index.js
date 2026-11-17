@@ -455,25 +455,57 @@ export function apply(ctx) {
   // ------------------------------------------------------ default-model write
 
   /**
-   * Keep a reasoning effort only when the target model advertises it. Writing
-   * an unsupported effort would make the adapter reject the next request, so an
-   * unknown or unsupported effort is dropped and the adapter default applies.
+   * Decide the reasoning effort to write alongside a selection.
+   *
+   * `saveSelection` replaces the WHOLE selection, so omitting the effort clears
+   * it. That makes "I could not check" a destructive answer, which is how a
+   * transient adapter failure once silently reset a user's `high` to the adapter
+   * default. The rules, in order:
+   *
+   *  - the model advertises the wanted effort          -> keep it;
+   *  - the model advertises no reasoning at all        -> drop it, correctly;
+   *  - it advertises efforts but not the wanted one    -> use its default, and
+   *                                                       report the drop;
+   *  - the adapter cannot be interrogated              -> keep the effort when
+   *                                                       the model is unchanged
+   *                                                       (it is in use right now,
+   *                                                       so it is known-good),
+   *                                                       otherwise drop it and
+   *                                                       report that.
+   *
+   * `dropped` is what lets the panel say so instead of the user finding out.
    */
-  async function resolveEffort(provider, model, requested) {
+  async function resolveEffort(provider, model, requested, current) {
+    const wanted = typeof requested === 'string' && requested !== ''
+      ? requested
+      : (typeof current?.reasoningEffort === 'string' && current.reasoningEffort !== ''
+        ? current.reasoningEffort
+        : undefined)
+    const unchanged = current !== undefined
+      && current.provider === provider
+      && current.model === model
+    const unresolved = () => ({
+      effort: unchanged ? wanted : undefined,
+      dropped: !unchanged && wanted !== undefined,
+    })
+
     const llm = ctx.get('llm')
-    if (llm === undefined) return undefined
+    if (llm === undefined) return unresolved()
     try {
       const info = await llm.resolveModelInfo(provider, model)
       const efforts = info?.reasoning?.efforts
-      if (!Array.isArray(efforts) || efforts.length === 0) return undefined
+      if (!Array.isArray(efforts) || efforts.length === 0) {
+        return { effort: undefined, dropped: wanted !== undefined }
+      }
       const ids = efforts.map((effort) => effort.id)
-      if (typeof requested === 'string' && ids.includes(requested)) return requested
-      const existing = currentSelection()?.reasoningEffort
-      if (typeof existing === 'string' && ids.includes(existing)) return existing
+      if (wanted !== undefined && ids.includes(wanted)) return { effort: wanted, dropped: false }
       const fallback = info.reasoning.defaultEffort
-      return typeof fallback === 'string' && ids.includes(fallback) ? fallback : undefined
+      if (typeof fallback === 'string' && ids.includes(fallback)) {
+        return { effort: fallback, dropped: wanted !== undefined && wanted !== fallback }
+      }
+      return { effort: undefined, dropped: wanted !== undefined }
     } catch {
-      return undefined
+      return unresolved()
     }
   }
 
@@ -508,16 +540,17 @@ export function apply(ctx) {
     if (requested === '') return { ok: false, error: 'No model id was supplied.' }
 
     const route = await resolveRoute(requested)
+    const current = currentSelection()
     const provider = typeof input?.provider === 'string' && input.provider !== ''
       ? input.provider
-      : (route?.provider ?? currentSelection()?.provider ?? 'openrouter')
+      : (route?.provider ?? current?.provider ?? 'openrouter')
     // Dispatch the id DSH's catalog actually carries, not the dated permaslug
     // the ranking came in under.
     const model = route !== undefined && route.provider === provider ? route.model : requested
 
     const selection = { provider, model }
-    const effort = await resolveEffort(provider, model, input?.reasoningEffort)
-    if (effort !== undefined) selection.reasoningEffort = effort
+    const resolved = await resolveEffort(provider, model, input?.reasoningEffort, current)
+    if (resolved.effort !== undefined) selection.reasoningEffort = resolved.effort
 
     try {
       await service.saveSelection(selection)
@@ -532,6 +565,9 @@ export function apply(ctx) {
       // different price, so the panel must say so rather than call it available.
       variantPreserved: variantOf(model) === variantOf(requested),
       requested,
+      // True when the previous effort could not be carried over, so the panel
+      // can say it instead of the user discovering it later.
+      effortDropped: resolved.dropped,
     }
   }
 
