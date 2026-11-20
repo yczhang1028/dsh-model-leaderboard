@@ -13,8 +13,23 @@
  * CORS, and the API key must stay on this side.
  */
 
+/**
+ * `webServer` is a hard dependency: the panel is useless without its data route.
+ * Declaring it here makes the Loader mount this plugin only when that service
+ * exists, and hands `apply` a context that carries it.
+ */
+export const inject = ['webServer']
+
 const OPENROUTER_API = 'https://openrouter.ai/api/v1'
-const ROUTE_PREFIX = '/api/model-leaderboard'
+
+/**
+ * This plugin's own HTTP namespace. It deliberately does NOT live under `/api`:
+ * that prefix belongs to DSH's `connection` service, which answers every
+ * `/api/*` request itself and applies Host/Origin admission first, so a route
+ * registered there is never reached. `/sidebar/api` is the convention another
+ * third-party bundle uses for the same reason.
+ */
+const ROUTE_PREFIX = '/model-leaderboard/api'
 
 /** Credential reference names tried in order for the OpenRouter key. */
 const KEY_REFS = ['OPENROUTER_API_KEY']
@@ -27,11 +42,7 @@ const TTL = {
 }
 
 export function apply(ctx) {
-  const webServer = ctx.get('webServer')
-  if (webServer === undefined) {
-    ctx.logger?.warn?.('model-leaderboard: no webServer in this composition; panel data route not registered')
-    return
-  }
+  const webServer = ctx.webServer
 
   /** name -> { at, value, error, pending } */
   const cache = new Map()

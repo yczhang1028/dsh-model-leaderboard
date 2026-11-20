@@ -1444,7 +1444,7 @@ table.ml-table td.ml-num { text-align: right; }
       const [state, setState] = React.useState({ status: 'loading' })
       React.useEffect(() => {
         let cancelled = false
-        fetch('/api/model-leaderboard/endpoints?id=' + encodeURIComponent(rowId), {
+        fetch('/model-leaderboard/api/endpoints?id=' + encodeURIComponent(rowId), {
           headers: { accept: 'application/json' },
         })
           .then((response) => response.json())
@@ -1580,7 +1580,7 @@ table.ml-table td.ml-num { text-align: right; }
       const load = React.useCallback(async (force) => {
         setState((current) => ({ ...current, status: current.data ? 'refreshing' : 'loading' }))
         try {
-          const response = await fetch('/api/model-leaderboard/snapshot' + (force ? '?refresh=1' : ''), {
+          const response = await fetch('/model-leaderboard/api/snapshot' + (force ? '?refresh=1' : ''), {
             headers: { accept: 'application/json' },
           })
           if (!response.ok) throw new Error('HTTP ' + response.status)
@@ -1608,7 +1608,7 @@ table.ml-table td.ml-num { text-align: right; }
         const model = row.catalogId ?? row.id
         const reasoningEffort = snapshot?.current?.reasoningEffort
         try {
-          const response = await fetch('/api/model-leaderboard/default-model', {
+          const response = await fetch('/model-leaderboard/api/default-model', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ provider: row.catalogProvider, model, reasoningEffort }),

@@ -127,7 +127,7 @@ and explains why the ranking boards are empty.
 
 The browser never calls `openrouter.ai` directly. The Host half fetches, caches
 (30 minutes for the catalog, 10 minutes for the key-gated datasets) and serves
-one assembled snapshot over the same-origin route `/api/model-leaderboard/*`. A failed
+one assembled snapshot over the same-origin route `/model-leaderboard/api/*`. A failed
 refresh keeps the previous value and reports the failure in the panel instead of
 emptying it.
 
